@@ -1,28 +1,16 @@
 ---
 name: improve-codebase-architecture
 description: Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
+disable-model-invocation: true
 ---
 
 # Improve Codebase Architecture
 
 Surface architectural friction and propose **deepening opportunities**: refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
-This command is _informed_ by the project's domain model and built on this design vocabulary:
+This command is _informed_ by the project's domain model and built on a shared design vocabulary:
 
-- **Module**: a unit that hides implementation decisions behind an interface.
-- **Interface**: the surface callers and tests depend on.
-- **Depth**: how much useful behavior a module provides relative to the complexity of its interface.
-- **Seam**: a deliberate place where implementations can vary independently.
-- **Adapter**: a module that translates between a seam and a concrete implementation. One adapter is a hypothetical seam; two adapters make the seam real.
-- **Leverage**: how much complexity or repeated work the module removes for its callers.
-- **Locality**: how much of a concept can be understood and changed in one place.
-- **Deletion test**: if deleting a suspected shallow module merely moves its complexity elsewhere, it is not earning its interface. If deletion would concentrate complexity and destroy useful hiding, the module has depth.
-- **The interface is the test surface**: prefer tests through the stable interface over tests coupled to internal helpers.
-
-Use these terms exactly in every suggestion, and don't drift into "component," "service," "API," or "boundary."
-
-The project provides the other half of the vocabulary:
-
+- Call the Skill tool with "codebase-design" for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion, and don't drift into "component," "service," "API," or "boundary."
 - The domain language in `CONTEXT.md` gives names to good seams; ADRs in `docs/adr/` record decisions this command should not re-litigate.
 
 ## Process
@@ -63,21 +51,21 @@ For each candidate, render a card with:
 
 End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
 
-**Use CONTEXT.md vocabulary for the domain, and the architecture vocabulary defined above.** If `CONTEXT.md` defines "Order," talk about "the Order intake module," not "the FooBarHandler," and not "the Order service."
+**Use CONTEXT.md vocabulary for the domain, and the `/codebase-design` vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module," not "the FooBarHandler," and not "the Order service."
 
 **ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the card (e.g. a warning callout: _"contradicts ADR-0007, but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
 
-Keep the report self-contained: include all CSS and markup in the generated file, apart from the Tailwind and Mermaid CDN imports. Use accessible colors, responsive layouts, clear headings, and diagrams that remain understandable when Mermaid fails to load.
+See [HTML-REPORT.md](HTML-REPORT.md) for the full HTML scaffold, diagram patterns, and styling guidance.
 
 Do NOT propose interfaces yet. After the file is written, ask the user: "Which of these would you like to explore?"
 
 ### 3. Grilling loop
 
-Once the user picks a candidate, walk the decision tree with them: constraints, dependencies, the shape of the deepened module, what sits behind the seam, and what tests survive. Ask one focused question at a time, challenge vague answers, and turn each settled decision into a concrete design constraint.
+Once the user picks a candidate, call the Skill tool with "grilling" to walk the decision tree with them: constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
 
-Keep the domain model current as decisions crystallize:
+Side effects happen inline as decisions crystallize; call the Skill tool with "domain-modeling" to keep the domain model current as you go:
 
 - **Naming a deepened module after a concept not in `CONTEXT.md`?** Add the term to `CONTEXT.md`. Create the file lazily if it doesn't exist.
 - **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
 - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing; skip ephemeral reasons ("not worth it right now") and self-evident ones.
-- **Want to explore alternative interfaces for the deepened module?** Design it twice: produce two meaningfully different interfaces, compare their depth, locality, leverage, test surfaces, and migration cost, then recommend one.
+- **Want to explore alternative interfaces for the deepened module?** Call the Skill tool with "codebase-design" and use its design-it-twice parallel sub-agent pattern.
